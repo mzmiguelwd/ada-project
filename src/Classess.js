@@ -116,6 +116,37 @@ export class MaxHeap {
       current = largest;
     }
   };
+
+  // ===== Eliminación arbitraria por ID =====
+
+  // Elimina del heap la tarea con el ID dado y reequilibra el montículo.
+  removeById = (id) => {
+    if (this.heap.length === 0) return null;
+
+    // Buscar el índice del elemento con ese ID.
+    const index = this.heap.findIndex((t) => t.id === id);
+    if (index === -1) return null;
+
+    const lastIndex = this.heap.length - 1;
+
+    // Si es el último elemento, solo hacer pop.
+    if (index === lastIndex) {
+      return this.heap.pop();
+    }
+
+    // Guardar el eliminado para retornarlo.
+    const removed = this.heap[index];
+
+    // Mover el último elemento a la posición del eliminado.
+    this.heap[index] = this.heap[lastIndex];
+    this.heap.pop();
+
+    // Reequilibrar: podría necesitar subir o bajar.
+    this.siftDown(index);
+    this.siftUp(index);
+
+    return removed;
+  };
 }
 
 export class AVLNode {

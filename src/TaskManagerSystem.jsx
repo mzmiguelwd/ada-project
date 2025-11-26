@@ -3,6 +3,7 @@ import { Task, MaxHeap, AVLTree } from "./Classess.js";
 import TaskForm from "./TaskForm.jsx";
 import SearchForm from "./SearchForm.jsx";
 import TaskList from "./TaskList.jsx";
+import DeleteForm from "./DeleteForm.jsx";
 
 function TaskManagerSystem() {
   // 1. Inicializar las estructuras de datos solo una vez.
@@ -96,6 +97,38 @@ function TaskManagerSystem() {
     }
   };
 
+  // Función para eliminar una tarea por ID: quita del AVL y del Heap. (completar tarea)
+  const handleDeleteTaskById = (id) => {
+    const parseId = parseInt(id);
+    if (isNaN(parseId)) {
+      setMessage(`Por favor, introduce un ID numérico válido.`);
+      return;
+    }
+
+    const existing = avlTree.search(parseId);
+    if (!existing) {
+      setMessage(`No existe tarea con ID ${parseId} en el índice.`);
+      return;
+    }
+
+    // Eliminar del AVL
+    avlTree.delete(parseId);
+    // Eliminar también del Heap (arbitrario por ID)
+    const removed = heap.removeById(parseId);
+
+    if (removed) {
+      setMessage(
+        `Tarea completada: ${removed.description} (ID: ${parseId}). Índice AVL ajustado y heap actualizado.`
+      );
+    } else {
+      setMessage(
+        `Tarea con ID ${parseId} eliminada del AVL. No estaba presente en el heap (posible desincronización).`
+      );
+    }
+
+    refreshTaskList();
+  };
+
   // Función para actualizar la lista de tareas visibles en la GUI.
   const refreshTaskList = () => {
     // Usa el método In-order del AVL para obtener todas las tareas activas
@@ -131,6 +164,8 @@ function TaskManagerSystem() {
           </button>
 
           <SearchForm onSearchTask={handleSearchTask} />
+
+          <DeleteForm onDeleteTask={handleDeleteTaskById} />
         </div>
       </section>
 
@@ -176,10 +211,10 @@ function TaskManagerSystem() {
           </ul>
         </div>
 
-        {/* === AVL IN ORDER === */}
+        {/* === AVL EN ORDEN === */}
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            AVL (In-order)
+            AVL (En orden)
           </h3>
 
           <ul className="space-y-2">
