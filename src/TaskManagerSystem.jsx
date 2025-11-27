@@ -4,6 +4,7 @@ import TaskForm from "./TaskForm.jsx";
 import SearchForm from "./SearchForm.jsx";
 import TaskList from "./TaskList.jsx";
 import DeleteForm from "./DeleteForm.jsx";
+import UpdateForm from "./UpdateForm.jsx";
 
 function TaskManagerSystem() {
   // 1. Inicializar las estructuras de datos solo una vez.
@@ -59,6 +60,41 @@ function TaskManagerSystem() {
     } catch (error) {
       setMessage(`Error al agregar tarea: ${error.message}`);
     }
+  };
+
+  // Actualiza una tarea por ID: elimina del Heap, actualiza campos y re-inserta.
+  const handleUpdateTask = (payload) => {
+    const parseId = parseInt(payload.id);
+    if (isNaN(parseId)) {
+      setMessage(`Por favor, introduce un ID numérico válido.`);
+      return;
+    }
+
+    const existing = avlTree.search(parseId);
+    if (!existing) {
+      setMessage(`No existe tarea con ID ${parseId} en el índice.`);
+      return;
+    }
+
+    // Remover del Heap (si está) para poder cambiar la prioridad sin romper el invariante
+    const removedFromHeap = heap.removeById(parseId);
+
+    // Mapear prioridad textual a numérica
+    const priorityMap = { Baja: 1, Media: 2, Alta: 3 };
+    const numericPriority = priorityMap[payload.priority] || existing.priority;
+
+    // Actualizar campos en el mismo objeto para mantener referencias compartidas (AVL)
+    existing.description = payload.description;
+    existing.priority = numericPriority;
+    existing.dueDate = payload.dueDate;
+
+    // Reinsertar al heap con la nueva prioridad si se eliminó con éxito o si no estaba, insertarlo igual
+    heap.insert(existing);
+
+    setMessage(
+      `Tarea actualizada: (ID ${parseId}) → Desc: "${existing.description}", Prioridad: ${payload.priority}, Vence: ${existing.dueDate}.`
+    );
+    refreshTaskList();
   };
 
   // Función para extraer la tarea más prioritaria del Heap y eliminarla del AVL.
@@ -162,6 +198,8 @@ function TaskManagerSystem() {
           >
             Completar tarea más prioritaria (Heap)
           </button>
+
+          <UpdateForm onUpdateTask={handleUpdateTask} />
 
           <SearchForm onSearchTask={handleSearchTask} />
 
