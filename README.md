@@ -1,16 +1,18 @@
-# React + Vite
+## Proyecto de Analisis y Diseño de Algoritmos
+Este proyecto es una demostración  de estructuras de datos, integrando dos componentes fundamentales para la gestión eficiente de información: Montículos Binarios (Heaps) para la gestión de prioridades y Árboles AVL para la indexación y búsqueda rápida de elementos.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Objetivos Técnicos Clave
+El objetivo principal fue desarrollar un sistema que garantice operaciones óptimas, específicamente:
 
-Currently, two official plugins are available:
+Acceso Prioritario Óptimo: La tarea de mayor urgencia se obtiene en tiempo O(1) y se extrae en tiempo O(logn).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Búsqueda Indexada Eficiente: La búsqueda, inserción y eliminación de cualquier tarea por su ID se realiza en tiempo O(logn), gracias al balanceo automático del árbol AVL.
 
-## React Compiler
+## Instrucciones de Uso
+#1 ejecuta el comando "npm install" en la terminal
+   estando dentro del proyecto
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+#2 ejecuta el comando npm run dev para iniciar el servidor de desarrollo
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+#3 una vez iniciado entra en la direccion web que te dio el servidor
+   y ya con esto puedes utilizar el programa
