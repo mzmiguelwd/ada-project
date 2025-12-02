@@ -22,8 +22,10 @@ const DeleteForm = ({ onDeleteTask }) => {
   };
 
   return (
-    <div className="p-5 border border-gray-300 rounded-lg bg-gray-50 shadow-sm">
-      <h3 className="text-lg font-semibold mb-4">Completar Tarea por ID</h3>
+    <div className="p-5 border border-orange-300 rounded-xl bg-white shadow-lg">
+      <h3 className="text-xl font-bold mb-4 text-orange-700">
+        Completar Tarea por ID
+      </h3>
 
       <form onSubmit={handleSubmit} className="flex gap-3">
         <input
@@ -33,12 +35,12 @@ const DeleteForm = ({ onDeleteTask }) => {
           onChange={handleChange}
           required
           placeholder="ID Único de la Tarea"
-          className="grow px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+          className="grow px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none transition duration-150"
         />
 
         <button
           type="submit"
-          className="px-4 py-2 rounded-lg font-medium bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer"
+          className="px-4 py-2 rounded-lg font-bold bg-sky-600 text-white shadow-md hover:bg-sky-700 transition duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
         >
           Completar
         </button>

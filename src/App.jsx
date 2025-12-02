@@ -1,13 +1,14 @@
-import TaskManagerSystem from "./TaskManagerSystem";
+import TaskManagerSystem from "./components/TaskManagerSystem.jsx";
 
 function App() {
   return (
     <div className="min-h-screen flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-6 text-amber-700">
-        Sistema de Gestión Tareas con Heap + AVL
+      <h1 className="text-xl font-bold mb-6 text-gray-700">
+        Proyecto Final: Análisis y Diseño de Algoritmos I - Brandon Lasprilla
+        (2417592) y Juan Manjarrez (2415330)
       </h1>
 
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-7xl">
         <TaskManagerSystem />
       </div>
     </div>

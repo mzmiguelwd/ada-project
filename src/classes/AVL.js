@@ -1,167 +1,33 @@
-export class Task {
-  constructor(id, description, priority, dueDate) {
-    // ID Único para el índice AVL.
-    this.id = id;
-    this.description = description;
+import { Task } from "./Task";
 
-    // La prioridad debe ser un valor numérico para el Heap.
-    // Alta=3, Media=2, Baja=1.
-    this.priority = priority;
-
-    this.dueDate = dueDate;
-  }
-}
-
-// La tarea con la mayor prioridad (número) sube a la cima.
-export class MaxHeap {
-  constructor() {
-    this.heap = [];
-  }
-
-  // ===== Métodos de Ayuda para Navegación =====
-
-  getParentIndex = (i) => Math.floor((i - 1) / 2);
-  getLeftChildIndex = (i) => 2 * i + 1;
-  getRightChildIndex = (i) => 2 * i + 2;
-
-  swap = (i, j) => {
-    [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
-  };
-
-  // ===== Lógica de Inserción (Sift Up) =====
-
-  insert = (task) => {
-    // Añadir la nueva tarea al final del array.
-    this.heap.push(task);
-
-    // Reordenar hacia arriba (Sift Up) para restaurar la propiedad Max-Heap.
-    this.siftUp(this.heap.length - 1);
-  };
-
-  siftUp = (index) => {
-    let current = index;
-    let parent = this.getParentIndex(current);
-
-    // Mientras no sea la raíz y la prioridad del hijo sea mayor que la del padre.
-    while (
-      current > 0 &&
-      this.heap[current].priority > this.heap[parent].priority
-    ) {
-      this.swap(current, parent);
-      current = parent;
-      parent = this.getParentIndex(current);
-    }
-  };
-
-  // ===== Lógica de Extracción (Sift Down) =====
-
-  // Método para obtener la tarea más prioritaria y eliminarla.
-  extractMax = () => {
-    if (this.heap.length === 0) {
-      return null;
-    }
-
-    if (this.heap.length === 1) {
-      return this.heap.pop();
-    }
-
-    // Guardar el máximo (la raíz).
-    const max = this.heap[0];
-
-    // Mover el último elemento a la raíz.
-    this.heap[0] = this.heap.pop();
-
-    // Reordenar hacia abajo (Sift Down).
-    this.siftDown(0);
-
-    // Devolver el máximo.
-    return max;
-  };
-
-  siftDown = (index) => {
-    let current = index;
-    const lastIndex = this.heap.length - 1;
-
-    // Repetir mientras el nodo tenga al menos un hijo.
-    while (this.getLeftChildIndex(current) <= lastIndex) {
-      let left = this.getLeftChildIndex(current);
-      let right = this.getRightChildIndex(current);
-      let largest = current;
-
-      // Determinar cuál es el nodo con la mayor prioridad entre el padre, el hijo izquierdo y el hijo derecho.
-
-      // Verificar hijo izquierdo.
-      if (
-        left <= lastIndex &&
-        this.heap[left].priority > this.heap[largest].priority
-      ) {
-        largest = left;
-      }
-
-      // Verificar hijo derecho.
-      if (
-        right <= lastIndex &&
-        this.heap[right].priority > this.heap[largest].priority
-      ) {
-        largest = right;
-      }
-
-      // Si el mayor es el nodo actual, hemos terminado.
-      if (largest === current) {
-        break;
-      }
-
-      // Intercambiar y continuar el Sift Down.
-      this.swap(current, largest);
-      current = largest;
-    }
-  };
-
-  // ===== Eliminación arbitraria por ID =====
-
-  // Elimina del heap la tarea con el ID dado y reequilibra el montículo.
-  removeById = (id) => {
-    if (this.heap.length === 0) return null;
-
-    // Buscar el índice del elemento con ese ID.
-    const index = this.heap.findIndex((t) => t.id === id);
-    if (index === -1) return null;
-
-    const lastIndex = this.heap.length - 1;
-
-    // Si es el último elemento, solo hacer pop.
-    if (index === lastIndex) {
-      return this.heap.pop();
-    }
-
-    // Guardar el eliminado para retornarlo.
-    const removed = this.heap[index];
-
-    // Mover el último elemento a la posición del eliminado.
-    this.heap[index] = this.heap[lastIndex];
-    this.heap.pop();
-
-    // Reequilibrar: podría necesitar subir o bajar.
-    this.siftDown(index);
-    this.siftUp(index);
-
-    return removed;
-  };
-}
-
+/**
+ * Representa un nodo individual en el Árbol AVL.
+ * La clave de ordenamiento es el ID de la tarea.
+ */
 export class AVLNode {
+  /**
+   * @param {number} id - La clave de ordenamiento del nodo (ID de la tarea).
+   * @param {Task} task - El objeto Task asociado con esta clave.
+   */
   constructor(id, task) {
-    // El ID de la tarea es la clave de ordenamiento del árbol.
     this.key = id;
     this.task = task;
-    this.left = null;
-    this.right = null;
-    // La altura se inicializa a 1 (un nodo hoja tiene altura 1).
+    this.left = null; // Puntero al hijo izquierdo.
+    this.right = null; // Puntero al hijo derecho.
+    // La altura se inicializa a 1 (un nodo hoja tiene altura 1). Es crucial para el balanceo.
     this.height = 1;
   }
 }
 
+// ----------------------------------------------------------------------
+
+/**
+ * Implementa un Árbol AVL.
+ * Se utiliza como índice principal para buscar, actualizar y eliminar tareas
+ * por su ID único, garantizando un tiempo de búsqueda O(log n).
+ */
 export class AVLTree {
+  // Inicializa la raíz del árbol a nula.
   constructor() {
     this.root = null;
   }
@@ -174,7 +40,12 @@ export class AVLTree {
   // Retorna el máximo de dos números.
   getMax = (a, b) => (a > b ? a : b);
 
-  // Calcular el factor de equilibrio (Altura izquierda - Altura derecha).
+  /**
+   * Calcular el factor de equilibrio (Altura izquierda - Altura derecha).
+   * Un factor de equilibrio de -1, 0, o 1 indica un nodo balanceado.
+   * @param {AVLNode} node - El nodo para calcular el factor.
+   * @returns {number} Factor de equilibrio.
+   */
   getBalanceFactor = (node) => {
     if (!node) {
       return 0;
@@ -185,15 +56,21 @@ export class AVLTree {
 
   // ===== Rotaciones =====
 
+  /**
+   * Realiza una Rotación Simple a la Derecha (Right Rotation).
+   * Necesaria para balancear casos Izquierda-Izquierda (LL) o Izquierda-Derecha (LR).
+   * @param {AVLNode} y - La raíz del subárbol desbalanceado.
+   * @returns {AVLNode} La nueva raíz (x).
+   */
   rotateRight = (y) => {
     const x = y.left;
     const T2 = x.right;
 
-    // Realizar la rotación.
+    // Realizar la rotación. (Y se convierte en hijo derecho de X).
     x.right = y;
     y.left = T2;
 
-    // Actualizar las alturas.
+    // Actualizar las alturas de los nodos afectados (y luego x).
     y.height = this.getMax(this.getHeight(y.left), this.getHeight(y.right)) + 1;
     x.height = this.getMax(this.getHeight(x.left), this.getHeight(x.right)) + 1;
 
@@ -201,15 +78,21 @@ export class AVLTree {
     return x;
   };
 
+  /**
+   * Realiza una Rotación Simple a la Izquierda (Left Rotation).
+   * Necesaria para balancear casos Derecha-Derecha (RR) o Derecha-Izquierda (RL).
+   * @param {AVLNode} x - La raíz del subárbol desbalanceado.
+   * @returns {AVLNode} La nueva raíz (y).
+   */
   rotateLeft = (x) => {
     const y = x.right;
     const T2 = y.left;
 
-    // Realizar la rotación.
+    // Realizar la rotación. (X se convierte en hijo izquierdo de Y).
     y.left = x;
     x.right = T2;
 
-    // Actualizar las alturas.
+    // Actualizar las alturas de los nodos afectados (x luego y).
     x.height = this.getMax(this.getHeight(x.left), this.getHeight(x.right)) + 1;
     y.height = this.getMax(this.getHeight(y.left), this.getHeight(y.right)) + 1;
 
@@ -219,12 +102,24 @@ export class AVLTree {
 
   // ===== Lógica de Inserción =====
 
+  /**
+   * Punto de entrada público para la inserción.
+   * @param {number} id - La clave única (ID de la tarea).
+   * @param {Task} task - El objeto Task a almacenar.
+   */
   insert = (id, task) => {
     this.root = this.insertNode(this.root, id, task);
   };
 
+  /**
+   * Función recursiva para insertar un nodo y reequilibrar el árbol.
+   * @param {AVLNode} node - El nodo actual.
+   * @param {number} id - La clave a insertar.
+   * @param {Task} task - La tarea a insertar.
+   * @returns {AVLNode} La raíz del subárbol después de la inserción y balanceo.
+   */
   insertNode = (node, id, task) => {
-    // Inserción estándar de BST.
+    // Inserción estándar de BST (Caso base).
     if (!node) {
       return new AVLNode(id, task);
     }
@@ -247,25 +142,25 @@ export class AVLTree {
 
     // Realizar rotaciones si el nodo está desbalanceado (balance > 1 o balance < -1)
 
-    // Caso Rotación Izquierda-Izquierda (LL).
+    // Caso Rotación Izquierda-Izquierda (LL): inserción en subárbol izq. de nodo izq.
     if (balance > 1 && id < node.left.key) {
       return this.rotateRight(node);
     }
 
-    // Caso Rotación Derecha-Derecha (RR).
+    // Caso Rotación Derecha-Derecha (RR): inserción en subárbol der. de nodo der.
     if (balance < -1 && id > node.right.key) {
       return this.rotateLeft(node);
     }
 
-    // Caso Rotación Izquierda-Derecha (LR).
+    // Caso Rotación Izquierda-Derecha (LR): Rotación Izquierda + Rotación Derecha.
     if (balance > 1 && id > node.left.key) {
-      node.left = this.rotateLeft(node.left);
+      node.left = this.rotateLeft(node.left); // Convierte LR en LL.
       return this.rotateRight(node);
     }
 
-    // Caso Rotación Derecha-Izquierda (RL).
+    // Caso Rotación Derecha-Izquierda (RL): Rotación Derecha + Rotación Izquierda.
     if (balance < -1 && id < node.right.key) {
-      node.right = this.rotateRight(node.right);
+      node.right = this.rotateRight(node.right); // Convierte RL en RR.
       return this.rotateLeft(node);
     }
 
@@ -275,22 +170,33 @@ export class AVLTree {
 
   // ===== Lógica de Búsqueda =====
 
+  /**
+   * Punto de entrada público para la búsqueda.
+   * @param {number} id - ID de la tarea a buscar.
+   * @returns {Task | null} El objeto Task, o null si no se encuentra.
+   */
   search = (id) => {
     return this.searchNode(this.root, id);
   };
 
+  /**
+   * Función recursiva para buscar un nodo por ID.
+   * @param {AVLNode} node - El nodo actual.
+   * @param {number} id - La clave a buscar.
+   * @returns {Task | null} El objeto Task o null.
+   */
   searchNode = (node, id) => {
     // Si el nodo es nulo o encontramos la clave (ID).
     if (!node || node.key === id) {
       return node ? node.task : null;
     }
 
-    // Si la clave es menor, buscar a la izquierda.
+    // Búsqueda recursiva: Si la clave es menor, buscar a la izquierda.
     if (id < node.key) {
       return this.searchNode(node.left, id);
     }
 
-    // Si la clave es mayor, buscar a la derecha.
+    // Búsqueda recursiva: Si la clave es mayor, buscar a la derecha.
     if (id > node.key) {
       return this.searchNode(node.right, id);
     }
@@ -298,6 +204,12 @@ export class AVLTree {
 
   // ===== Lógica de Eliminación =====
 
+  /**
+   * Encuentra el nodo con la clave (ID) mínima en un subárbol.
+   * Se utiliza para encontrar el sucesor in-order en la eliminación.
+   * @param {AVLNode} node - La raíz del subárbol.
+   * @returns {AVLNode} El nodo con el valor mínimo.
+   */
   getMinValueNode = (node) => {
     let current = node;
 
@@ -308,16 +220,26 @@ export class AVLTree {
     return current;
   };
 
+  /**
+   * Punto de entrada público para la eliminación.
+   * @param {number} id - ID de la tarea a eliminar.
+   */
   delete = (id) => {
     this.root = this.deleteNode(this.root, id);
   };
 
+  /**
+   * Función recursiva para eliminar un nodo por ID y reequilibrar el árbol.
+   * @param {AVLNode} node - El nodo actual.
+   * @param {number} id - La clave a eliminar.
+   * @returns {AVLNode | null} La nueva raíz del subárbol después de la eliminación/balanceo.
+   */
   deleteNode = (node, id) => {
     if (node === null) {
       return node;
     }
 
-    // Eliminación estándar de BST.
+    // Eliminación estándar de BST (recorrer el árbol).
     if (id < node.key) {
       // La clave está en el subárbol izquierdo.
       node.left = this.deleteNode(node.left, id);
@@ -329,20 +251,14 @@ export class AVLTree {
 
       // Caso 1: Nodo con 0 o 1 hijo.
       if (node.left === null || node.right === null) {
-        let temp = null;
-        if (node.left === null) {
-          temp = node.right;
-        } else {
-          temp = node.left;
-        }
+        let temp = node.left === null ? node.right : node.left;
 
-        // Caso 0 hijos (es una hoja): retorna null.
+        // Caso 1.0 hijos (es una hoja): retorna null.
         if (temp === null) {
-          temp = node;
           node = null;
         }
 
-        // Caso 1 hijo: el hijo reemplaza al nodo.
+        // Caso 1.1 hijo: el hijo reemplaza al nodo.
         else {
           node = temp;
         }
@@ -356,21 +272,19 @@ export class AVLTree {
         node.key = temp.key;
         node.task = temp.task;
 
-        // Eliminar el sucesor in-order (el nodo que copiamos).
+        // Eliminar el sucesor in-order recursivamente.
         node.right = this.deleteNode(node.right, temp.key);
       }
     }
 
-    // Si el árbol solo tenía un nodo.
+    // Si el nodo se hizo nulo (caso 0 hijos), retornar.
     if (node === null) {
       return node;
     }
 
-    // Actualizar altura.
+    // Actualizar altura y Factor de Equilibrio.
     node.height =
       this.getMax(this.getHeight(node.left), this.getHeight(node.right)) + 1;
-
-    // Obtener factor de equilibrio.
     const balance = this.getBalanceFactor(node);
 
     // Realizar rotaciones (si hay desbalance).
@@ -408,21 +322,41 @@ export class AVLTree {
 
   // ===== Lógica de Recorrido =====
 
-  // Realiza un recorrido in-order (ascendente por ID) en el AVL Tree.
+  /**
+   * Realiza un recorrido in-order (ascendente por ID) en el AVL Tree
+   * para obtener la lista completa y ordenada de tareas.
+   * @returns {Task[]} Un array de objetos Task, ordenados por ID.
+   */
   getTasksInOrder = () => {
     const tasks = [];
     this.inOrderTraversal(this.root, tasks);
     return tasks;
   };
 
+  /**
+   * Función auxiliar recursiva para el recorrido in-order.
+   * @param {AVLNode} node - El nodo actual.
+   * @param {Task[]} tasks - El array donde se almacenan las tareas.
+   */
   inOrderTraversal = (node, tasks) => {
     if (node !== null) {
+      // 1. Recorrer subárbol izquierdo (valores menores).
       this.inOrderTraversal(node.left, tasks);
+      // 2. Procesar el nodo actual (añadir la tarea).
       tasks.push(node.task);
+      // 3. Recorrer subárbol derecho (valores mayores).
       this.inOrderTraversal(node.right, tasks);
     }
   };
 
+  /**
+   * Genera una representación visual del Árbol AVL
+   * para fines de depuración. Muestra la clave (ID) del nodo.
+   * @param {AVLNode} node [node=this.root] - El nodo inicial.
+   * @param {string} prefix [prefix=""] - Prefijo de indentación.
+   * @param {boolean} isLeft [isLeft=true] - Indica si el nodo es hijo izquierdo.
+   * @returns {string} La representación en cadena del árbol.
+   */
   printAVL = (node = this.root, prefix = "", isLeft = true) => {
     if (!node) return "";
 
@@ -436,6 +370,7 @@ export class AVLTree {
       );
     }
 
+    // Muestra la clave del nodo (ID).
     result += prefix + (isLeft ? "└── " : "┌── ") + node.key + "\n";
 
     if (node.left) {
